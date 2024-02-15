@@ -1,11 +1,11 @@
 ##
 ## EPITECH PROJECT, 2024
-# PROJECT NAME
+## Wolfram
 ## File description:
 ## Makefile
 ##
 
-NAME = EXECUTABLE_NAME
+NAME = wolfram
 
 SRC = ./src/main.c
 
@@ -17,11 +17,12 @@ CFLAGS = -Wall -Wextra -Werror -Wpedantic
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
-	$(CC) -o $(NAME) $(OBJ) $(CFLAGS)
+$(NAME):
+	stack build
+	cp $(shell stack path --local-install-root)/bin/Wolfram-exe $(NAME)
 
 clean:
-	rm -f $(OBJ)
+	stack clean
 
 fclean: clean
 	rm -f $(NAME)
