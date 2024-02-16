@@ -23,21 +23,20 @@ displayWolfram (Conf
                             (fromJust linesValue)
                             (fromJust windowValue)
                             (fromJust moveValue)
+                            1
 
-displayWolfram' :: [Bool] -> [Bool] -> Int -> Int -> Int -> Int -> IO ()
-displayWolfram' _ _ _ 0 _ _ = return ()
-displayWolfram' rule' (x:xs) start' lines' window' move' = do
-    printLine (init xs) start'
-    putStrLn ""
-    displayWolfram' rule' (generateLine (x:xs) rule')
-        start' (lines' - 1) window' move'
-displayWolfram' _ _ _ _ _ _ = return ()
+displayWolfram' :: [Bool] -> [Bool] -> Int -> Int -> Int -> Int -> Int -> IO ()
+displayWolfram' _ _ _ 0 _ _ _ = return ()
+displayWolfram' rule' pattern' start' lines' window' move' lineCount =
+    printLine (removeOffset pattern' lineCount) start' >>
+    putStrLn "" >>
+    displayWolfram' rule' (generateLine pattern' rule')
+        start' (lines' - 1) window' move' (lineCount + 1)
 
 printLine :: [Bool] -> Int -> IO ()
 printLine [] _ = return ()
 printLine (x:xs) start' | x = putStr "*" >> printLine xs start'
                         | otherwise = putStr " " >> printLine xs start'
-
 
 getRuleAsBinary :: Int -> [Bool]
 getRuleAsBinary x = reverse (take 8 (getRuleAsBinary' x ++ repeat False))
@@ -56,7 +55,7 @@ generateWholeStart Nothing = []
 generateWholeStart (Just x) | x `mod` 2 == 1 =
                         False : (generateStart x (x `div` 2 + 1) ++ [False])
                             | otherwise =
-                                False : (generateStart x (x `div` 2) ++ [False])
+                        False : (generateStart x (x `div` 2) ++ [False])
 
 getPattern :: [Bool] -> [Bool] -> Bool
 getPattern binary (True:True:True:_) = head binary
@@ -71,10 +70,16 @@ getPattern _ _ = False
 
 generateLine :: [Bool] -> [Bool] -> [Bool]
 generateLine [] _ = []
-generateLine x y = generateLine' (False : x ++ [False]) y
+generateLine x y = False : generateLine' (False : x ++ [False]) y ++ [False]
 
 generateLine' :: [Bool] -> [Bool] -> [Bool]
 generateLine' (one:two:three:xs) y | null xs = [getPattern y [one, two, three]]
                                    | otherwise = getPattern y [one, two, three]
                                             : generateLine' (two:three:xs) y
 generateLine' _ _ = []
+
+
+removeOffset :: [Bool] -> Int -> [Bool]
+removeOffset x 0 = x
+removeOffset (_:xs) n = removeOffset (init xs) (n - 1)
+removeOffset _ _ = []
