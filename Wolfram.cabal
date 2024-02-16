@@ -25,7 +25,9 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      ArgsParser
+      Conf
+      DisplayWolfram
   other-modules:
       Paths_Wolfram
   autogen-modules:

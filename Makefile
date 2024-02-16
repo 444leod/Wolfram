@@ -7,17 +7,7 @@
 
 NAME = wolfram
 
-SRC = ./src/main.c
-
-OBJ = $(SRC:.asm=.o)
-
-CC = gcc
-
-CFLAGS = -Wall -Wextra -Werror -Wpedantic
-
-all: $(NAME)
-
-$(NAME):
+all:
 	stack build
 	cp $(shell stack path --local-install-root)/bin/Wolfram-exe $(NAME)
 
