@@ -27,11 +27,17 @@ displayWolfram (Conf
 displayWolfram' :: [Bool] -> [Bool] -> Int -> Int -> Int -> Int -> IO ()
 displayWolfram' _ _ _ 0 _ _ = return ()
 displayWolfram' rule' (x:xs) start' lines' window' move' = do
-    printChar (init xs) start'
+    printLine (init xs) start'
     putStrLn ""
     displayWolfram' rule' (generateLine (x:xs) rule')
         start' (lines' - 1) window' move'
 displayWolfram' _ _ _ _ _ _ = return ()
+
+printLine :: [Bool] -> Int -> IO ()
+printLine [] _ = return ()
+printLine (x:xs) start' | x = putStr "*" >> printLine xs start'
+                        | otherwise = putStr " " >> printLine xs start'
+
 
 getRuleAsBinary :: Int -> [Bool]
 getRuleAsBinary x = reverse (take 8 (getRuleAsBinary' x ++ repeat False))
