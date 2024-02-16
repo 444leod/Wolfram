@@ -20,23 +20,31 @@ displayWolfram (Conf
                             (getRuleAsBinary (fromJust ruleValue))
                             (generateWholeStart windowValue)
                             (fromJust startValue)
-                            (fromJust linesValue)
+                            (fromJust linesValue + fromJust startValue)
                             (fromJust windowValue)
                             (fromJust moveValue)
                             1
 
 displayWolfram' :: [Bool] -> [Bool] -> Int -> Int -> Int -> Int -> Int -> IO ()
 displayWolfram' _ _ _ 0 _ _ _ = return ()
-displayWolfram' rule' pattern' start' lines' window' move' lineCount =
-    printLine (removeOffset pattern' lineCount) start' >>
-    putStrLn "" >>
-    displayWolfram' rule' (generateLine pattern' rule')
-        start' (lines' - 1) window' move' (lineCount + 1)
+displayWolfram' rule' pattern' start' lines' window' move' lineCount
+    | lineCount < start' =
+        displayWolfram' rule' (generateLine pattern' rule')
+            start' (lines' - 1) window' move' (lineCount + 1)
+    | otherwise =
+        printLine (removeOffset pattern' lineCount) start' move' >>
+        putStrLn "" >>
+        displayWolfram' rule' (generateLine pattern' rule')
+            start' (lines' - 1) window' move' (lineCount + 1)
 
-printLine :: [Bool] -> Int -> IO ()
-printLine [] _ = return ()
-printLine (x:xs) start' | x = putStr "*" >> printLine xs start'
-                        | otherwise = putStr " " >> printLine xs start'
+printLine :: [Bool] -> Int -> Int -> IO ()
+printLine [] _ _ = return ()
+printLine (x:xs) start' move' | move' < 0 =
+                        printLine (xs ++ [x]) start' (move' + 1)
+                              | move' > 0 =
+                        printLine (last xs : init (x:xs)) start' (move' - 1)
+                              | x = putStr "*" >> printLine xs start' 0
+                              | otherwise = putStr " " >> printLine xs start' 0
 
 getRuleAsBinary :: Int -> [Bool]
 getRuleAsBinary x = reverse (take 8 (getRuleAsBinary' x ++ repeat False))
