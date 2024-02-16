@@ -62,3 +62,13 @@ getPattern binary (False:True:False:_) = binary !! 5
 getPattern binary (False:False:True:_) = binary !! 6
 getPattern binary (False:False:False:_) = binary !! 7
 getPattern _ _ = False
+
+generateLine :: [Bool] -> [Bool] -> [Bool]
+generateLine [] _ = []
+generateLine x y = generateLine' (False : x ++ [False]) y
+
+generateLine' :: [Bool] -> [Bool] -> [Bool]
+generateLine' (one:two:three:xs) y | null xs = [getPattern y [one, two, three]]
+                                   | otherwise = getPattern y [one, two, three]
+                                            : generateLine' (two:three:xs) y
+generateLine' _ _ = []
