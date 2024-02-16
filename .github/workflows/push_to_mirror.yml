@@ -1,0 +1,24 @@
+name: Wolfram
+
+on: [push, pull_request]
+
+env:
+  MIRROR_URL: "git@github.com:EpitechPromo2027/B-FUN-400-LIL-4-1-wolfram-leo.dumont.git"
+
+jobs:
+  push_to_mirror:
+    name: Push to mirror
+    if: ${{ github.ref_name == 'main' && github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to mirror
+        uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: ${{ env.MIRROR_URL }}
+          ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
