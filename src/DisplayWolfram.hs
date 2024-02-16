@@ -51,3 +51,14 @@ generateWholeStart (Just x) | x `mod` 2 == 1 =
                         False : (generateStart x (x `div` 2 + 1) ++ [False])
                             | otherwise =
                                 False : (generateStart x (x `div` 2) ++ [False])
+
+getPattern :: [Bool] -> [Bool] -> Bool
+getPattern binary (True:True:True:_) = head binary
+getPattern binary (True:True:False:_) = binary !! 1
+getPattern binary (True:False:True:_) = binary !! 2
+getPattern binary (True:False:False:_) = binary !! 3
+getPattern binary (False:True:True:_) = binary !! 4
+getPattern binary (False:True:False:_) = binary !! 5
+getPattern binary (False:False:True:_) = binary !! 6
+getPattern binary (False:False:False:_) = binary !! 7
+getPattern _ _ = False
