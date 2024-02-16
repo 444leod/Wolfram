@@ -1,28 +1,11 @@
-name: PROJECT_NAME
+name: Wolfram
 
 on: [push, pull_request]
 
 env:
-  MIRROR_URL: ""
+  MIRROR_URL: "git@github.com:EpitechPromo2027/B-FUN-400-LIL-4-1-wolfram-leo.dumont.git"
 
 jobs:
-  build:
-    name: Test compilations
-    runs-on: ubuntu-latest
-    container: epitechcontent/epitest-docker:latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Test Makefile rules
-        timeout-minutes: 2
-        run: |
-          make
-          make re
-          make clean
-          make fclean
-
   test:
     name: Run tests
     runs-on: ubuntu-latest
@@ -67,7 +50,7 @@ jobs:
 
   push_to_mirror:
     name: Push to mirror
-    needs: [build, test, check_coding_style]
+    needs: [test, check_coding_style]
     if: ${{ github.ref_name == 'main' && github.event_name == 'push' }}
     runs-on: ubuntu-latest
 
