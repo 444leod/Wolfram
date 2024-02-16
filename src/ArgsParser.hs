@@ -45,9 +45,9 @@ getLines (_:args) = getLines args
 getLines [] = Just (-1)
 
 getWindow :: [String] -> Maybe Int
-getWindow ("--window":x:_)   | isJust (atoi x) && fromJust (atoi x) < 0 = Nothing
-                            | isJust (atoi x) = atoi x
-                            | otherwise = Nothing
+getWindow ("--window":x:_) | isJust (atoi x) && fromJust (atoi x) < 0 = Nothing
+                           | isJust (atoi x) = atoi x
+                           | otherwise = Nothing
 getWindow ("--window":_) = Nothing
 getWindow (_:args) = getWindow args
 getWindow [] = Just 80
@@ -76,7 +76,7 @@ checkConfigurationValues (Conf
     ruleValue startValue linesValue
     windowValue moveValue)  | isNothing ruleValue = printError "Invalid rule"
                     | fromJust ruleValue /= 30 && fromJust ruleValue /= 90
-                        && fromJust ruleValue /= 110 = printError "Invalid rule"
+                    && fromJust ruleValue /= 110 = printError "Invalid rule"
                     | isNothing startValue = printError "Invalid start"
                     | isNothing linesValue = printError "Invalid lines"
                     | isNothing windowValue = printError "Invalid window"
