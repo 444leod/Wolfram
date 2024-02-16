@@ -39,3 +39,15 @@ getRuleAsBinary x = reverse (take 8 (getRuleAsBinary' x ++ repeat False))
 getRuleAsBinary' :: Int -> [Bool]
 getRuleAsBinary' 0 = []
 getRuleAsBinary' x = (x `mod` 2 == 1) : getRuleAsBinary' (x `div` 2)
+
+generateStart :: Int -> Int -> [Bool]
+generateStart 0 _ = []
+generateStart x y | x == y = True : generateStart (x - 1) y
+                  | otherwise = False : generateStart (x - 1) y
+
+generateWholeStart :: Maybe Int -> [Bool]
+generateWholeStart Nothing = []
+generateWholeStart (Just x) | x `mod` 2 == 1 =
+                        False : (generateStart x (x `div` 2 + 1) ++ [False])
+                            | otherwise =
+                                False : (generateStart x (x `div` 2) ++ [False])
