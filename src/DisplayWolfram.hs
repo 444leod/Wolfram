@@ -32,3 +32,10 @@ displayWolfram' rule' (x:xs) start' lines' window' move' = do
     displayWolfram' rule' (generateLine (x:xs) rule')
         start' (lines' - 1) window' move'
 displayWolfram' _ _ _ _ _ _ = return ()
+
+getRuleAsBinary :: Int -> [Bool]
+getRuleAsBinary x = reverse (take 8 (getRuleAsBinary' x ++ repeat False))
+
+getRuleAsBinary' :: Int -> [Bool]
+getRuleAsBinary' 0 = []
+getRuleAsBinary' x = (x `mod` 2 == 1) : getRuleAsBinary' (x `div` 2)
