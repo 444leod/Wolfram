@@ -10,7 +10,6 @@ module ArgsParser
         parseArgs,
         checkConfigurationValues,
         printError,
-        Conf
     ) where
 
 import Text.Read (readMaybe)
