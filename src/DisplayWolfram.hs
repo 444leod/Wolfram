@@ -4,6 +4,7 @@
 -- File description:
 -- DisplayWolfram
 -}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 
 module DisplayWolfram
     (
@@ -16,35 +17,69 @@ import Conf (Conf(..))
 displayWolfram :: Conf -> IO ()
 displayWolfram (Conf
     ruleValue startValue linesValue
-    windowValue moveValue) = displayWolfram'
+    windowValue moveValue) = wolfram
                             (getRuleAsBinary (fromJust ruleValue))
-                            (generateWholeStart windowValue)
+                            (False : generateStartLine (fromJust windowValue) ++ [False])
                             (fromJust startValue)
                             (fromJust linesValue + fromJust startValue)
                             (fromJust windowValue)
                             (fromJust moveValue)
                             1
 
-displayWolfram' :: [Bool] -> [Bool] -> Int -> Int -> Int -> Int -> Int -> IO ()
-displayWolfram' _ _ _ 0 _ _ _ = return ()
-displayWolfram' rule' pattern' start' lines' window' move' lineCount
-    | lineCount < start' =
-        displayWolfram' rule' (generateLine pattern' rule')
-            start' (lines' - 1) window' move' (lineCount + 1)
-    | otherwise =
-        printLine (removeOffset pattern' lineCount) start' move' >>
-        putStrLn "" >>
-        displayWolfram' rule' (generateLine pattern' rule')
-            start' (lines' - 1) window' move' (lineCount + 1)
+wolfram :: [Bool] -> [Bool] -> Int -> Int -> Int -> Int -> Int -> IO ()
+wolfram _ _ 0 0 _ _ _ = return ()
+wolfram rule pattern 0 lines window move currentLine =
+    printLine pattern move window currentLine >>
+        wolfram
+            rule (False : generateLine currentPattern rule ++ [False])
+            0 (lines - 1)
+            window move
+            (currentLine + 1)
+    where currentPattern = removeBorder pattern
+wolfram rule pattern start lines window move currentLine =
+    wolfram
+        rule (generateLine (removeBorder pattern) rule)
+        (start - 1) lines
+        window move (currentLine + 1)
 
-printLine :: [Bool] -> Int -> Int -> IO ()
-printLine [] _ _ = return ()
-printLine (x:xs) start' move' | move' < 0 =
-                        printLine (xs ++ [x]) start' (move' + 1)
-                              | move' > 0 =
-                        printLine (last xs : init (x:xs)) start' (move' - 1)
-                              | x = putStr "*" >> printLine xs start' 0
-                              | otherwise = putStr " " >> printLine xs start' 0
+removeBorder :: [Bool] -> [Bool]
+removeBorder [] = []
+removeBorder (_:xs) = xs
+
+generateLine :: [Bool] -> [Bool] -> [Bool]
+generateLine [] _ = []
+generateLine x y = False : getPatternedLine (False : x ++ [False]) y ++ [False]
+
+getPatternedLine :: [Bool] -> [Bool] -> [Bool]
+getPatternedLine [a, b, c] y = [getPattern y [a, b, c]]
+getPatternedLine (a:b:c:xs) y
+    = getPattern y [a, b, c] : getPatternedLine (b:c:xs) y
+getPatternedLine _ _ = []
+
+generateStartLine :: Int  -> [Bool]
+generateStartLine size = generateStartLine' size (size `div` 2)
+
+generateStartLine' :: Int -> Int -> [Bool]
+generateStartLine' 0 _ = []
+generateStartLine' x y  | x == y = True : generateStartLine' (x - 1) y
+                        | otherwise = False : generateStartLine' (x - 1) y
+
+printLine :: [Bool] -> Int -> Int -> Int -> IO ()
+printLine (x:xs) move window line   | move > 0 = printLine (False : x : xs) (move - 1) window line
+                                    | move < 0 = printLine (xs ++ [False]) (move + 1) window line
+                                    | otherwise = printLine' (x:xs) window line
+printLine _ _ _ _ = return ()
+
+printLine' :: [Bool] -> Int -> Int -> IO ()
+printLine' list window 0 = printFullLine list window
+printLine' (_:xs) window line = printLine' xs window (line - 1)
+printLine' _ _ _ = return ()
+
+printFullLine :: [Bool] -> Int -> IO ()
+printFullLine _ 0 = putStrLn ""
+printFullLine (True:xs) window = putStr "*" >> printFullLine xs (window - 1)
+printFullLine (False:xs) window = putStr " " >> printFullLine xs (window - 1)
+printFullLine _ _ = return ()
 
 getRuleAsBinary :: Int -> [Bool]
 getRuleAsBinary x = reverse (take 8 (getRuleAsBinary' x ++ repeat False))
@@ -52,18 +87,6 @@ getRuleAsBinary x = reverse (take 8 (getRuleAsBinary' x ++ repeat False))
 getRuleAsBinary' :: Int -> [Bool]
 getRuleAsBinary' 0 = []
 getRuleAsBinary' x = (x `mod` 2 == 1) : getRuleAsBinary' (x `div` 2)
-
-generateStart :: Int -> Int -> [Bool]
-generateStart 0 _ = []
-generateStart x y | x == y = True : generateStart (x - 1) y
-                  | otherwise = False : generateStart (x - 1) y
-
-generateWholeStart :: Maybe Int -> [Bool]
-generateWholeStart Nothing = []
-generateWholeStart (Just x) | x `mod` 2 == 1 =
-                        False : (generateStart x (x `div` 2 + 1) ++ [False])
-                            | otherwise =
-                        False : (generateStart x (x `div` 2) ++ [False])
 
 getPattern :: [Bool] -> [Bool] -> Bool
 getPattern binary (True:True:True:_) = head binary
@@ -75,19 +98,3 @@ getPattern binary (False:True:False:_) = binary !! 5
 getPattern binary (False:False:True:_) = binary !! 6
 getPattern binary (False:False:False:_) = binary !! 7
 getPattern _ _ = False
-
-generateLine :: [Bool] -> [Bool] -> [Bool]
-generateLine [] _ = []
-generateLine x y = False : generateLine' (False : x ++ [False]) y ++ [False]
-
-generateLine' :: [Bool] -> [Bool] -> [Bool]
-generateLine' (one:two:three:xs) y | null xs = [getPattern y [one, two, three]]
-                                   | otherwise = getPattern y [one, two, three]
-                                            : generateLine' (two:three:xs) y
-generateLine' _ _ = []
-
-
-removeOffset :: [Bool] -> Int -> [Bool]
-removeOffset x 0 = x
-removeOffset (_:xs) n = removeOffset (init xs) (n - 1)
-removeOffset _ _ = []
