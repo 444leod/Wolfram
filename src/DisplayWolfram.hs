@@ -31,7 +31,7 @@ wolfram _ _ 0 0 _ _ _ = return ()
 wolfram rule pattern 0 lines window move currentLine =
     printLine pattern move window currentLine >>
         wolfram
-            rule (False : generateLine currentPattern rule ++ [False])
+            rule (False : (generateLine currentPattern rule ++ [False]))
             0 (lines - 1)
             window move
             (currentLine + 1)
@@ -48,7 +48,7 @@ removeBorder (_:xs) = xs
 
 generateLine :: [Bool] -> [Bool] -> [Bool]
 generateLine [] _ = []
-generateLine x y = False : getPatternedLine (False : x ++ [False]) y ++ [False]
+generateLine x y = False : getPatternedLine (False : (x ++ [False])) y ++ [False]
 
 getPatternedLine :: [Bool] -> [Bool] -> [Bool]
 getPatternedLine [a, b, c] y = [getPattern y [a, b, c]]
