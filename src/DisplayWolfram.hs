@@ -15,11 +15,11 @@ import Data.Maybe (fromJust)
 import Conf (Conf(..))
 
 displayWolfram :: Conf -> IO ()
-displayWolfram (Conf
-    ruleValue startValue linesValue
+displayWolfram (Conf ruleValue startValue linesValue
     windowValue moveValue) = wolfram
                             (getRuleAsBinary (fromJust ruleValue))
-                            (False : generateStartLine (fromJust windowValue) ++ [False])
+                            (False : generateStartLine (fromJust windowValue)
+                                ++ [False])
                             (fromJust startValue)
                             (fromJust linesValue + fromJust startValue)
                             (fromJust windowValue)
@@ -65,9 +65,12 @@ generateStartLine' x y  | x == y = True : generateStartLine' (x - 1) y
                         | otherwise = False : generateStartLine' (x - 1) y
 
 printLine :: [Bool] -> Int -> Int -> Int -> IO ()
-printLine (x:xs) move window line   | move > 0 = printLine (False : x : xs) (move - 1) window line
-                                    | move < 0 = printLine (xs ++ [False]) (move + 1) window line
-                                    | otherwise = printLine' (x:xs) window line
+printLine (x:xs) move window line   | move > 0 = printLine (False : x : xs)
+                                        (move - 1) window line
+                                    | move < 0 = printLine (xs ++ [False])
+                                        (move + 1) window line
+                                    | otherwise =
+                                            printLine' (x:xs) window line
 printLine _ _ _ _ = return ()
 
 printLine' :: [Bool] -> Int -> Int -> IO ()
