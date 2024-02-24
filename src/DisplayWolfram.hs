@@ -38,9 +38,12 @@ wolfram rule pattern 0 lines window move currentLine =
     where currentPattern = removeBorder pattern
 wolfram rule pattern start lines window move currentLine =
     wolfram
-        rule (generateLine (removeBorder pattern) rule)
-        (start - 1) lines
-        window move (currentLine + 1)
+        rule (False : (generateLine currentPattern rule ++ [False]))
+            (start - 1) (lines - 1)
+            window move
+            (currentLine + 1)
+    where currentPattern = removeBorder pattern
+
 
 removeBorder :: [Bool] -> [Bool]
 removeBorder [] = []

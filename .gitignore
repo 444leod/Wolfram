@@ -37,3 +37,7 @@ wolfram
 .stack-work/
 *~
 coding-style-reports.log
+test*.txt
+wolfram_elliot
+leo_output
+elliot_output
