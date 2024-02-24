@@ -18,8 +18,7 @@ displayWolfram :: Conf -> IO ()
 displayWolfram (Conf ruleValue startValue linesValue
     windowValue moveValue) = wolfram
                             (getRuleAsBinary (fromJust ruleValue))
-                            (False : generateStartLine (fromJust windowValue)
-                                ++ [False])
+                            (generateStartLine (fromJust windowValue + 2))
                             (fromJust startValue)
                             (fromJust linesValue + fromJust startValue)
                             (fromJust windowValue)
@@ -29,21 +28,25 @@ displayWolfram (Conf ruleValue startValue linesValue
 wolfram :: [Bool] -> [Bool] -> Int -> Int -> Int -> Int -> Int -> IO ()
 wolfram _ _ 0 0 _ _ _ = return ()
 wolfram rule pattern 0 lines window move currentLine =
-    printLine pattern move window currentLine >>
-        wolfram
-            rule (False : (generateLine currentPattern rule ++ [False]))
-            0 (lines - 1)
-            window move
-            (currentLine + 1)
-    where currentPattern = removeBorder pattern
+    wolframWithoutStart rule pattern lines window move currentLine
 wolfram rule pattern start lines window move currentLine =
     wolfram
-        rule (False : (generateLine currentPattern rule ++ [False]))
+        rule (False : generateLine currentPattern rule)
             (start - 1) (lines - 1)
             window move
             (currentLine + 1)
     where currentPattern = removeBorder pattern
 
+wolframWithoutStart :: [Bool] -> [Bool] -> Int -> Int -> Int -> Int -> IO ()
+wolframWithoutStart _ _ 0 _ _ _ = return ()
+wolframWithoutStart rule pattern lines window move currentLine =
+        printFullLine
+            (getCutLine (getMovedLine pattern move) currentLine) window >>
+        wolframWithoutStart rule
+            (False : generateLine currentPattern rule) (lines - 1)
+            window move
+            (currentLine + 1)
+    where currentPattern = removeBorder pattern
 
 removeBorder :: [Bool] -> [Bool]
 removeBorder [] = []
@@ -51,10 +54,11 @@ removeBorder (_:xs) = xs
 
 generateLine :: [Bool] -> [Bool] -> [Bool]
 generateLine [] _ = []
-generateLine x y = False : getPatternedLine (False : (x ++ [False])) y ++ [False]
+generateLine x y = False : getPatternedLine (False : x) y
 
 getPatternedLine :: [Bool] -> [Bool] -> [Bool]
-getPatternedLine [a, b, c] y = [getPattern y [a, b, c]]
+getPatternedLine [a, b] y = [getPattern y [a, b, False], False, False, False]
+getPatternedLine [a, b, c] y = getPattern y [a, b, c] : getPatternedLine [b, c] y
 getPatternedLine (a:b:c:xs) y
     = getPattern y [a, b, c] : getPatternedLine (b:c:xs) y
 getPatternedLine _ _ = []
@@ -67,25 +71,22 @@ generateStartLine' 0 _ = []
 generateStartLine' x y  | x == y = True : generateStartLine' (x - 1) y
                         | otherwise = False : generateStartLine' (x - 1) y
 
-printLine :: [Bool] -> Int -> Int -> Int -> IO ()
-printLine (x:xs) move window line   | move > 0 = printLine (False : x : xs)
-                                        (move - 1) window line
-                                    | move < 0 = printLine (xs ++ [False])
-                                        (move + 1) window line
-                                    | otherwise =
-                                            printLine' (x:xs) window line
-printLine _ _ _ _ = return ()
+getMovedLine :: [Bool] -> Int -> [Bool]
+getMovedLine (x:xs) move | move > 0 = getMovedLine (False : (x:xs)) (move - 1)
+                         | move < 0 = getMovedLine xs (move + 1)
+                         | otherwise = x:xs
+getMovedLine [] _ = []
 
-printLine' :: [Bool] -> Int -> Int -> IO ()
-printLine' list window 0 = printFullLine list window
-printLine' (_:xs) window line = printLine' xs window (line - 1)
-printLine' _ _ _ = return ()
+getCutLine :: [Bool] -> Int -> [Bool]
+getCutLine list 0 = list
+getCutLine (_:xs) currentLine = getCutLine xs (currentLine - 1)
+getCutLine _ _ = []
 
 printFullLine :: [Bool] -> Int -> IO ()
 printFullLine _ 0 = putStrLn ""
+printFullLine [] window = putStr " " >> printFullLine [] (window - 1)
 printFullLine (True:xs) window = putStr "*" >> printFullLine xs (window - 1)
 printFullLine (False:xs) window = putStr " " >> printFullLine xs (window - 1)
-printFullLine _ _ = return ()
 
 getRuleAsBinary :: Int -> [Bool]
 getRuleAsBinary x = reverse (take 8 (getRuleAsBinary' x ++ repeat False))
