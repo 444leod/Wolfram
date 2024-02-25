@@ -58,7 +58,8 @@ generateLine x y = False : getPatternedLine (False : x) y
 
 getPatternedLine :: [Bool] -> [Bool] -> [Bool]
 getPatternedLine [a, b] y = [getPattern y [a, b, False], False, False, False]
-getPatternedLine [a, b, c] y = getPattern y [a, b, c] : getPatternedLine [b, c] y
+getPatternedLine [a, b, c] y =
+        getPattern y [a, b, c] : getPatternedLine [b, c] y
 getPatternedLine (a:b:c:xs) y
     = getPattern y [a, b, c] : getPatternedLine (b:c:xs) y
 getPatternedLine _ _ = []

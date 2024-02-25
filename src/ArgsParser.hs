@@ -45,9 +45,10 @@ getLines (_:args) = getLines args
 getLines [] = Just (-1)
 
 getWindow :: [String] -> Maybe Int
-getWindow ("--window":x:_) | isJust (atoi x) && fromJust (atoi x) < 0 = Nothing
-                           | isJust (atoi x) = atoi x
-                           | otherwise = Nothing
+getWindow ("--window":x:_)
+    | isJust (atoi x) && fromJust (atoi x) < 0 = Nothing
+    | isJust (atoi x) = atoi x
+    | otherwise = Nothing
 getWindow ("--window":_) = Nothing
 getWindow (_:args) = getWindow args
 getWindow [] = Just 80
@@ -69,7 +70,8 @@ parseArgs args = Conf {
 }
 
 printError :: String -> IO ()
-printError str = hPutStr stderr ("Error: " ++ str) >> exitWith (ExitFailure 84)
+printError str =
+    hPutStr stderr ("Error: " ++ str) >> exitWith (ExitFailure 84)
 
 checkConfigurationValues :: Conf -> IO ()
 checkConfigurationValues (Conf
